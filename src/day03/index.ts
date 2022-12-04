@@ -2,7 +2,10 @@ import run from "aocrunner";
 
 const parseInput = (rawInput: string) => rawInput;
 
-const getPriority = (char: string) => {
+const getPriority = (char: string | undefined) => {
+  if (char === undefined) {
+    return 0;
+  }
   const charCode = char.charCodeAt(0);
   return charCode > 96 ? charCode - 96 : charCode - 64 + 26;
 };
@@ -10,12 +13,11 @@ const getPriority = (char: string) => {
 const sum = (a: number, b: number): number => a + b;
 
 const part1 = (rawInput: string) => {
-  const input = parseInput(rawInput).split("\n");
-
-  // @ts-ignore
-  return input
+  return parseInput(rawInput)
+    .split("\n")
     .map((backpackContent) => backpackContent.match(new RegExp(".{1," + backpackContent.length / 2 + "}", "g")))
-    .map(([compartment1, compartment2]) => compartment1.match(new RegExp(`[${compartment2}]`))[0])
+    .map((parsedLine) => [parsedLine?.[0] || "", parsedLine?.[1] || ""])
+    .map(([compartment1, compartment2]) => compartment1.match(new RegExp(`[${compartment2}]`))?.[0])
     .map(getPriority)
     .reduce(sum);
 };
