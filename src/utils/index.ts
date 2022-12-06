@@ -29,3 +29,15 @@
  *     import { myUtil } from '../utils'
  *
  */
+
+export interface operator<T, U> {
+  (input: T): U;
+}
+
+export function pipe<T>(): operator<T, T>;
+export function pipe<T, A>(op1: operator<T, A>): operator<T, A>;
+export function pipe<T, A, B>(op1: operator<T, A>, op2: operator<A, B>): operator<T, B>;
+export function pipe<T, A, B, C>(op1: operator<T, A>, op2: operator<A, B>, op3: operator<B, C>): operator<T, C>;
+export function pipe(...functions: operator<any, any>[]): any {
+  return (input: any) => functions.reduce((acc, func) => func(acc), input);
+}

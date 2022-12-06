@@ -1,4 +1,5 @@
 import run from "aocrunner";
+import { pipe } from "rxjs";
 
 const parseInput = (rawInput: string) => {
   const [stacksStr, movementsStr] = rawInput.split("\n\n");
@@ -18,49 +19,56 @@ type Pile = string[];
  * ex : [['A', 'B'], [], ['C']]
  */
 const parseStacksAndRotate = (input: string): Pile[] => {
-  return (
-    input
-      .split("\n")
-      .map((line) => line.match(/.{1,4}/g)?.map((crate) => crate.replace(/[^A-Z]/g, "")) || [])
-      .reduce((stack: string[][], stackLine) => {
-        stackLine.map((crate, index) => {
-          if (crate) {
-            if (!stack[index]) {
-              stack[index] = [];
-            }
-            stack[index].push(crate);
-          }
-        });
-        return stack;
-      }, []) || [[]]
-  );
+  return input
+    .split("\n")
+    .map((line) => line.match(/.{1,4}/g)?.map((crate) => crate.replace(/[^A-Z]/g, "")) || [])
+    .reduce((stack: string[][], stackLine) => {
+      stackLine.map((crate, index) => {
+        if (crate !== "") {
+          stack[index] = [...(stack[index] || []), crate];
+        }
+      });
+      return stack;
+    }, []);
 };
 
 const parseMovements = (input: string): Movement[] => {
-  return input.split("\n").map((v) => {
-    const moves = v.match(/[0-9]+/g)?.map((x, i) => parseInt(x) - (i ? 1 : 0));
-    return { quantity: moves?.[0] || 0, from: moves?.[1] || 0, to: moves?.[2] || 0 };
+  return input.split("\n").map((line) => {
+    const moves = line.match(/[0-9]+/g)?.map((value) => parseInt(value)) || [];
+    return { quantity: moves[0] || 0, from: (moves[1] || 1) - 1, to: (moves[2] || 1) - 1 };
   });
 };
 
+const crateMover9000Result = (array: any[]) => array.reverse();
+const crateMover9001Result = (array: any[]) => array;
+
+function getResultedStack(movements: Movement[], stacks: Pile[], crateResult: (arg: any[]) => any[]): Pile[] {
+  return movements.reduce((stack, moves) => {
+    stack[moves.to].unshift(...crateResult(stack[moves.from].splice(0, moves.quantity)));
+    return stack;
+  }, stacks);
+}
+
+const getTopCrates = (stack: Pile[]): string[] => {
+  return stack.map((pile: Pile) => pile[0]);
+};
+
 const part1 = (rawInput: string) => {
-  const { stacks, movements } = parseInput(rawInput);
-  return movements
-    .reduce((stack, moves) => {
-      stack[moves.to].unshift(...stack[moves.from].splice(0, moves.quantity).reverse());
-      return stack;
-    }, stacks)
-    .reduce((result, pile) => result + (pile[0] || ""), "");
+  return pipe(
+    parseInput,
+    ({ stacks, movements }) => getResultedStack(movements, stacks, crateMover9000Result),
+    getTopCrates,
+    (crates) => crates.join(""),
+  )(rawInput);
 };
 
 const part2 = (rawInput: string) => {
-  const { stacks, movements } = parseInput(rawInput);
-  return movements
-    .reduce((stack, moves) => {
-      stack[moves.to].unshift(...stack[moves.from].splice(0, moves.quantity));
-      return stack;
-    }, stacks)
-    .reduce((a, v) => a + (v[0] || ""), "");
+  return pipe(
+    parseInput,
+    ({ stacks, movements }) => getResultedStack(movements, stacks, crateMover9001Result),
+    getTopCrates,
+    (crates) => crates.join(""),
+  )(rawInput);
 };
 const testInput = `    [D]    
 [N] [C]    
