@@ -15,16 +15,16 @@ const part1 = (rawInput: string) => {
         let canBeSeenFromBottom = true;
         let canBeSeenFromRight = true;
         let canBeSeenFromLeft = true;
-        for (let i = y - 1; i >= 0; i--) {
+        for (let i = y - 1; i >= 0 && canBeSeenFromTop; i--) {
           canBeSeenFromTop = canBeSeenFromTop && forest[i][x] < tree;
         }
-        for (let i = y + 1; i < forestHeight; i++) {
+        for (let i = y + 1; i < forestHeight && canBeSeenFromRight; i++) {
           canBeSeenFromBottom = canBeSeenFromBottom && forest[i][x] < tree;
         }
-        for (let i = x + 1; i < forestWidth; i++) {
+        for (let i = x + 1; i < forestWidth && canBeSeenFromRight; i++) {
           canBeSeenFromRight = canBeSeenFromRight && forest[y][i] < tree;
         }
-        for (let i = x - 1; i >= 0; i--) {
+        for (let i = x - 1; i >= 0 && canBeSeenFromLeft; i--) {
           canBeSeenFromLeft = canBeSeenFromLeft && forest[y][i] < tree;
         }
         return canBeSeenFromTop || canBeSeenFromBottom || canBeSeenFromRight || canBeSeenFromLeft ? tree : -Infinity;
