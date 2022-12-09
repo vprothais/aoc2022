@@ -7,34 +7,34 @@ type Directory = {
   size: number;
 };
 
-const getNewDir = (name: string, parent: string = ""): Directory => ({
+const createNewDir = (name: string, parent: string = ""): Directory => ({
   parent,
   name,
   size: 0,
   children: [],
 });
 
-const parseInput = (rawInput: string) => {
+const parseInput = (rawInput: string): Map<string, Directory> => {
   const input = rawInput
     .split("$")
     .map((line) => line.trim())
     .filter((line) => line.length);
 
-  const filesystem = new Map<string, Directory>([["/", getNewDir("/")]]);
+  const filesystem = new Map<string, Directory>([["/", createNewDir("/")]]);
 
   let path: string[] = [];
   let currentDir = filesystem.get("/");
-  input.forEach((commandLine) => {
-    const [command, ...result] = commandLine.split("\n");
+  input.forEach((commandBlock) => {
+    const [command, ...output] = commandBlock.split("\n");
     if (command.startsWith("ls")) {
-      result.forEach((file) => {
-        if (file.startsWith("dir ")) {
-          const dir = file.substring(4);
-          const dirPath = path.join("/") + "/" + dir;
-          currentDir!.children.push(dirPath);
-          filesystem.set(dirPath, getNewDir(dir, currentDir!.name));
+      output.forEach((dirChild) => {
+        if (dirChild.startsWith("dir ")) {
+          const subDirName = dirChild.substring(4);
+          const subDirPath = path.join("/") + "/" + subDirName;
+          currentDir!.children.push(subDirPath);
+          filesystem.set(subDirPath, createNewDir(subDirName, currentDir!.name));
         } else {
-          currentDir!.size += parseInt(file);
+          currentDir!.size += parseInt(dirChild);
         }
       });
     } else {
@@ -51,8 +51,8 @@ const parseInput = (rawInput: string) => {
   return filesystem;
 };
 
-const computeDirSize = (node: string, filesystem: Map<string, Directory>): number => {
-  const file = filesystem.get(node);
+const computeDirSize = (path: string, filesystem: Map<string, Directory>): number => {
+  const file = filesystem.get(path);
   if (file!.children.length === 0) {
     return file!.size;
   } else {
