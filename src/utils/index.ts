@@ -41,3 +41,7 @@ export function pipe<T, A, B, C>(op1: operator<T, A>, op2: operator<A, B>, op3: 
 export function pipe(...functions: operator<any, any>[]): any {
   return (input: any) => functions.reduce((acc, func) => func(acc), input);
 }
+
+export function sum(accumulator: number, value: number): number {
+  return accumulator + value;
+}
